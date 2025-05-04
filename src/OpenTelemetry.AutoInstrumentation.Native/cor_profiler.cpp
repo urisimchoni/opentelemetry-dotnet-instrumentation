@@ -944,9 +944,10 @@ HRESULT STDMETHODCALLTYPE CorProfiler::JITCompilationStarted(FunctionID function
 {
     auto _ = trace::Stats::Instance()->JITCompilationStartedMeasure();
 
-    // The flag for this callback is only set if runtime_information_.is_desktop() is true.
-    // So there is no need to check it again here.
-    if (is_attached_ && is_safe_to_block)
+    // This profiler only sets the flag for this callback if runtime_information_.is_desktop() is true.
+    // However, other profilers (which support "chaining" or "multiplexing") might
+    // set the JIT event flag, so it's prudent to check it again here.
+    if (is_attached_ && is_safe_to_block && runtime_information_.is_desktop())
     {
         // The JIT compilation only needs to be tracked on the .NET Framework so the Loader
         // can be injected. For .NET the DOTNET_STARTUP_HOOK takes care of injecting the
